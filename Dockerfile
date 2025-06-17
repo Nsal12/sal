@@ -1,17 +1,16 @@
 # Use an official Ubuntu runtime as a parent image
 FROM ubuntu:22.04
 
-# Set environment variable for the port
-ENV PORT=8080
-
 # Install dependencies
-RUN apt-get update && \
-    apt-get install -y curl wget gnupg software-properties-common && \
-    curl -fsSL https://code-server.dev/install.sh | sh && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt update && \
+    apt install -y software-properties-common && \
+    apt clean
+RUN mkdir -p /app && echo "Tmate Session"
+WORKDIR /app
 
 # Expose the correct port
-EXPOSE $PORT
+EXPOSE 6080
 
 # Start code-server (listen on all interfaces)
-CMD ["code-server", "--bind-addr", "0.0.0.0:8080", "--auth", "none"]
+CMD python3 -m http.server 6080 & \
+    tmate -F
